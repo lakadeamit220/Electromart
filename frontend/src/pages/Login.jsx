@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import useAuthStore from "../store/authStore";
+import { toast } from "react-toastify";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -17,28 +18,32 @@ function Login() {
         "http://localhost:5000/api/auth/login",
         { email, password }
       );
-      console.log(response.data);
       setUser(response.data.user, response.data.token);
+      toast.success("Logged in successfully");
       navigate("/");
     } catch (error) {
-      setError(error.response?.data?.message || "Login failed");
+      const message = error.response?.data?.message || "Login failed";
+      setError(message);
+      toast.error(message);
     }
   };
 
   return (
     <div className="container mx-auto max-w-md p-6">
-      <h1 className="text-2xl font-bold mb-4">Login</h1>
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+      <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+        Login
+      </h1>
+      {error && <p className="text-red-600 mb-4 text-center">{error}</p>}
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-lg shadow-md"
+        className="bg-white p-8 rounded-xl shadow-lg"
       >
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
         <input
@@ -46,12 +51,12 @@ function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
         <button
           type="submit"
-          className="bg-blue-600 text-white p-2 rounded w-full"
+          className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
         >
           Login
         </button>
