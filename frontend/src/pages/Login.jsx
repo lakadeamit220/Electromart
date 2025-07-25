@@ -17,6 +17,7 @@ function Login() {
         "http://localhost:5000/api/auth/login",
         { email, password }
       );
+      console.log(response.data);
       setUser(response.data.user, response.data.token);
       navigate("/");
     } catch (error) {

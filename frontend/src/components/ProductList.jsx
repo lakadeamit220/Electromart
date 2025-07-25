@@ -17,6 +17,7 @@ function ProductList({ onEdit, onDelete }) {
         const response = await axios.get("http://localhost:5000/api/products", {
           params: { page, limit: 9, search, category },
         });
+        console.log(response.data);
         setProducts(response.data.products);
         setTotalPages(response.data.totalPages);
       } catch (error) {
@@ -38,8 +39,8 @@ function ProductList({ onEdit, onDelete }) {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex flex-col md:flex-row justify-between mb-6">
+    <div className="container mx-auto p-6 border-8 border-amber-500">
+      <div className="flex flex-col md:flex-row justify-around mb-6">
         <input
           type="text"
           value={search}

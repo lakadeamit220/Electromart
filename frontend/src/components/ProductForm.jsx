@@ -42,7 +42,7 @@ function ProductForm({ product, onSubmit }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md">
+    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md border-4">
       <h2 className="text-xl font-bold mb-4">
         {product ? "Edit Product" : "Add Product"}
       </h2>
