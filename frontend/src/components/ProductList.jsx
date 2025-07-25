@@ -39,7 +39,7 @@ function ProductList({ onEdit, onDelete }) {
   };
 
   return (
-    <div className="container mx-auto p-6 border-8 border-amber-500">
+    <div className="container mx-auto p-6">
       <div className="flex flex-col md:flex-row justify-around mb-6">
         <input
           type="text"
