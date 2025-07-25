@@ -5,7 +5,7 @@ import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Get all products with pagination, search, and filtering
+// Get all products with pagination, search, filtering, and sorting
 router.get(
   '/',
   [
@@ -13,18 +13,26 @@ router.get(
     query('limit').optional().isInt({ min: 1 }).withMessage('Limit must be a positive integer'),
     query('search').optional().isString().trim(),
     query('category').optional().isString().trim(),
+    query('sort').optional().isIn(['price_asc', 'price_desc', 'name_asc', 'name_desc']).withMessage('Invalid sort option'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { page = 1, limit = 10, search = '', category = '' } = req.query;
+    const { page = 1, limit = 10, search = '', category = '', sort = '' } = req.query;
     const query = {};
     if (search) query.name = { $regex: search, $options: 'i' };
     if (category) query.category = category;
 
     try {
+      const sortOptions = {};
+      if (sort === 'price_asc') sortOptions.price = 1;
+      if (sort === 'price_desc') sortOptions.price = -1;
+      if (sort === 'name_asc') sortOptions.name = 1;
+      if (sort === 'name_desc') sortOptions.name = -1;
+
       const products = await Product.find(query)
+        .sort(sortOptions)
         .limit(limit * 1)
         .skip((page - 1) * limit)
         .exec();
@@ -39,6 +47,16 @@ router.get(
     }
   }
 );
+
+// Get unique categories
+router.get('/categories', async (req, res) => {
+  try {
+    const categories = await Product.distinct('category');
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Create product (admin only)
 router.post(
