@@ -1,18 +1,18 @@
-import { useState } from 'react';
-import axios from 'axios';
-import useAuthStore from '../store/authStore';
-import { toast } from 'react-toastify';
+import { useState } from "react";
+import axios from "axios";
+import useAuthStore from "../store/authStore";
+import { toast } from "react-toastify";
 
 function ProductForm({ product, onSubmit }) {
   const { token } = useAuthStore();
   const [formData, setFormData] = useState(
     product || {
-      name: '',
-      description: '',
-      price: '',
-      category: '',
-      image: '',
-      stock: '',
+      name: "",
+      description: "",
+      price: "",
+      category: "",
+      image: "",
+      stock: "",
     }
   );
   const [errors, setErrors] = useState([]);
@@ -21,15 +21,19 @@ function ProductForm({ product, onSubmit }) {
     e.preventDefault();
     try {
       if (product) {
-        await axios.put(`http://localhost:5000/api/products/${product._id}`, formData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        toast.success('Product updated successfully');
+        await axios.put(
+          `http://localhost:5000/api/products/${product._id}`,
+          formData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        toast.success("Product updated successfully");
       } else {
-        await axios.post('http://localhost:5000/api/products', formData, {
+        await axios.post("http://localhost:5000/api/products", formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        toast.success('Product created successfully');
+        toast.success("Product created successfully");
       }
       setErrors([]);
       onSubmit();
@@ -37,7 +41,7 @@ function ProductForm({ product, onSubmit }) {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors.map((err) => err.msg));
       } else {
-        toast.error('Failed to save product');
+        toast.error("Failed to save product");
       }
     }
   };
@@ -47,12 +51,19 @@ function ProductForm({ product, onSubmit }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-lg max-w-lg mx-auto">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">{product ? 'Edit Product' : 'Add Product'}</h2>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white p-6 rounded-xl shadow-lg max-w-lg mx-auto"
+    >
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        {product ? "Edit Product" : "Add Product"}
+      </h2>
       {errors.length > 0 && (
         <div className="mb-4">
           {errors.map((error, index) => (
-            <p key={index} className="text-red-600 text-sm">{error}</p>
+            <p key={index} className="text-red-600 text-sm">
+              {error}
+            </p>
           ))}
         </div>
       )}
