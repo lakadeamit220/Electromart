@@ -1,39 +1,44 @@
-import { useState } from "react";
-import axios from "axios";
-import useAuthStore from "../store/authStore";
+import { useState } from 'react';
+import axios from 'axios';
+import useAuthStore from '../store/authStore';
+import { toast } from 'react-toastify';
 
 function ProductForm({ product, onSubmit }) {
   const { token } = useAuthStore();
   const [formData, setFormData] = useState(
     product || {
-      name: "",
-      description: "",
-      price: "",
-      category: "",
-      image: "",
-      stock: "",
+      name: '',
+      description: '',
+      price: '',
+      category: '',
+      image: '',
+      stock: '',
     }
   );
+  const [errors, setErrors] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (product) {
-        await axios.put(
-          `http://localhost:5000/api/products/${product._id}`,
-          formData,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-      } else {
-        await axios.post("http://localhost:5000/api/products", formData, {
+        await axios.put(`http://localhost:5000/api/products/${product._id}`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        toast.success('Product updated successfully');
+      } else {
+        await axios.post('http://localhost:5000/api/products', formData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success('Product created successfully');
       }
+      setErrors([]);
       onSubmit();
     } catch (error) {
-      console.error("Error saving product:", error);
+      if (error.response?.data?.errors) {
+        setErrors(error.response.data.errors.map((err) => err.msg));
+      } else {
+        toast.error('Failed to save product');
+      }
     }
   };
 
@@ -42,16 +47,21 @@ function ProductForm({ product, onSubmit }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md border-4">
-      <h2 className="text-xl font-bold mb-4">
-        {product ? "Edit Product" : "Add Product"}
-      </h2>
+    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-lg max-w-lg mx-auto">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">{product ? 'Edit Product' : 'Add Product'}</h2>
+      {errors.length > 0 && (
+        <div className="mb-4">
+          {errors.map((error, index) => (
+            <p key={index} className="text-red-600 text-sm">{error}</p>
+          ))}
+        </div>
+      )}
       <input
         name="name"
         value={formData.name}
         onChange={handleChange}
-        placeholder="Name"
-        className="w-full p-2 mb-4 border rounded"
+        placeholder="Product Name"
+        className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         required
       />
       <textarea
@@ -59,16 +69,17 @@ function ProductForm({ product, onSubmit }) {
         value={formData.description}
         onChange={handleChange}
         placeholder="Description"
-        className="w-full p-2 mb-4 border rounded"
+        className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         required
       />
       <input
         name="price"
         type="number"
+        step="0.01"
         value={formData.price}
         onChange={handleChange}
         placeholder="Price"
-        className="w-full p-2 mb-4 border rounded"
+        className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         required
       />
       <input
@@ -76,7 +87,7 @@ function ProductForm({ product, onSubmit }) {
         value={formData.category}
         onChange={handleChange}
         placeholder="Category"
-        className="w-full p-2 mb-4 border rounded"
+        className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         required
       />
       <input
@@ -84,7 +95,7 @@ function ProductForm({ product, onSubmit }) {
         value={formData.image}
         onChange={handleChange}
         placeholder="Image URL"
-        className="w-full p-2 mb-4 border rounded"
+        className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         required
       />
       <input
@@ -93,10 +104,13 @@ function ProductForm({ product, onSubmit }) {
         value={formData.stock}
         onChange={handleChange}
         placeholder="Stock"
-        className="w-full p-2 mb-4 border rounded"
+        className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         required
       />
-      <button type="submit" className="bg-blue-600 text-white p-2 rounded">
+      <button
+        type="submit"
+        className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+      >
         Save
       </button>
     </form>
