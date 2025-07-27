@@ -1,6 +1,7 @@
 import express from 'express';
 import { body, query, validationResult } from 'express-validator';
 import Product from '../models/Product.js';
+import Review from '../models/Review.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -32,6 +33,7 @@ router.get(
       if (sort === 'name_desc') sortOptions.name = -1;
 
       const products = await Product.find(query)
+        .populate('reviews')
         .sort(sortOptions)
         .limit(limit * 1)
         .skip((page - 1) * limit)
@@ -47,6 +49,17 @@ router.get(
     }
   }
 );
+
+// Get single product by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).populate('reviews');
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Get unique categories
 router.get('/categories', async (req, res) => {
@@ -118,10 +131,45 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
-    res.json({ message: 'Product deleted' });
+    await Review.deleteMany({ productId: req.params.id });
+    res.json({ message: 'Product and associated reviews deleted' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// Add review
+router.post(
+  '/:id/reviews',
+  authMiddleware,
+  [
+    body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
+    body('comment').notEmpty().withMessage('Comment is required'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    try {
+      const product = await Product.findById(req.params.id);
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+
+      const review = new Review({
+        productId: req.params.id,
+        userId: req.user.id,
+        rating: req.body.rating,
+        comment: req.body.comment,
+      });
+      await review.save();
+
+      product.reviews.push(review._id);
+      await product.save();
+
+      res.status(201).json(review);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
 
 export default router;
