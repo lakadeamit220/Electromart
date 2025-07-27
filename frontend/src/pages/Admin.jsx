@@ -7,6 +7,7 @@ import { ToastContainer } from "react-toastify";
 function Admin() {
   const { user } = useAuthStore();
   const [editingProduct, setEditingProduct] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   if (!user?.isAdmin) {
     return (
@@ -14,19 +15,18 @@ function Admin() {
     );
   }
 
+  const handleFormSubmit = () => {
+    setEditingProduct(null);
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-4xl font-extrabold text-gray-800 mb-8 text-center">
         Admin Dashboard
       </h1>
-      <ProductForm
-        product={editingProduct}
-        onSubmit={() => {
-          setEditingProduct(null);
-          // Trigger product list refresh (handled in ProductList useEffect)
-        }}
-      />
-      <ProductList onEdit={setEditingProduct} />
+      <ProductForm product={editingProduct} onSubmit={handleFormSubmit} />
+      <ProductList onEdit={setEditingProduct} key={refreshTrigger} />
       <ToastContainer
         position="top-right"
         autoClose={3000}

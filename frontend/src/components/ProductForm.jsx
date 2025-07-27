@@ -1,21 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import useAuthStore from "../store/authStore";
 import { toast } from "react-toastify";
 
 function ProductForm({ product, onSubmit }) {
   const { token } = useAuthStore();
-  const [formData, setFormData] = useState(
-    product || {
-      name: "",
-      description: "",
-      price: "",
-      category: "",
-      image: "",
-      stock: "",
-    }
-  );
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    image: "",
+    stock: "",
+  });
   const [errors, setErrors] = useState([]);
+
+  // Update formData when product prop changes (for editing)
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name || "",
+        description: product.description || "",
+        price: product.price || "",
+        category: product.category || "",
+        image: product.image || "",
+        stock: product.stock || "",
+      });
+    } else {
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        category: "",
+        image: "",
+        stock: "",
+      });
+    }
+  }, [product]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,6 +57,14 @@ function ProductForm({ product, onSubmit }) {
         toast.success("Product created successfully");
       }
       setErrors([]);
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        category: "",
+        image: "",
+        stock: "",
+      });
       onSubmit();
     } catch (error) {
       if (error.response?.data?.errors) {

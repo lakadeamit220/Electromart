@@ -1,26 +1,29 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import ProductCard from './ProductCard';
-import useAuthStore from '../store/authStore';
-import { toast } from 'react-toastify';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import ProductCard from "./ProductCard";
+import useAuthStore from "../store/authStore";
+import { toast } from "react-toastify";
 
-function ProductList({ onEdit, onDelete }) {
+function ProductList({ onEdit }) {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
-  const [sort, setSort] = useState('');
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [sort, setSort] = useState("");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { user, token } = useAuthStore();
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/products/categories');
+        const response = await axios.get(
+          "http://localhost:5000/api/products/categories"
+        );
         setCategories(response.data);
       } catch (error) {
-        toast.error('Failed to fetch categories');
+        toast.error("Failed to fetch categories");
       }
     };
     fetchCategories();
@@ -29,17 +32,25 @@ function ProductList({ onEdit, onDelete }) {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/products', {
-          params: { page, limit: 9, search, category, sort },
+        const params = {
+          page,
+          limit: 9,
+        };
+        if (search) params.search = search;
+        if (category) params.category = category;
+        if (sort) params.sort = sort;
+
+        const response = await axios.get("http://localhost:5000/api/products", {
+          params,
         });
         setProducts(response.data.products);
         setTotalPages(response.data.totalPages);
       } catch (error) {
-        toast.error('Failed to fetch products');
+        toast.error("Failed to fetch products");
       }
     };
     fetchProducts();
-  }, [page, search, category, sort]);
+  }, [page, search, category, sort, refreshTrigger]);
 
   const handleDelete = async (id, name) => {
     try {
@@ -49,8 +60,13 @@ function ProductList({ onEdit, onDelete }) {
       setProducts(products.filter((product) => product._id !== id));
       toast.success(`${name} deleted successfully`);
     } catch (error) {
-      toast.error('Failed to delete product');
+      toast.error("Failed to delete product");
     }
+  };
+
+  // Function to trigger product list refresh
+  const refreshProducts = () => {
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   return (
@@ -70,7 +86,9 @@ function ProductList({ onEdit, onDelete }) {
         >
           <option value="">All Categories</option>
           {categories.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
           ))}
         </select>
         <select
@@ -116,7 +134,9 @@ function ProductList({ onEdit, onDelete }) {
         >
           Previous
         </button>
-        <span className="text-gray-700">Page {page} of {totalPages}</span>
+        <span className="text-gray-700">
+          Page {page} of {totalPages}
+        </span>
         <button
           onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={page === totalPages}
