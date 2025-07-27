@@ -5,6 +5,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Admin from "./pages/Admin";
 import Cart from "./components/Cart";
+import ProductDetails from "./pages/ProductDetails";
+import Profile from "./pages/Profile";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
@@ -17,7 +20,14 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/products/:id" element={<ProductDetails />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+        />
       </div>
     </Router>
   );
